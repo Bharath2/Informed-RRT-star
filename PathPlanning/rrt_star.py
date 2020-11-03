@@ -29,12 +29,9 @@ class RRTStar(RRT):
             if not self.map.collision(nearest_node.p,new_node.p):
               #add the node to tree
               self.add(new_node)
-
         #Return path if it exists
-        if self.goal.parent:
-            path = self.final_path()
-        else: path = None
-
+        if not self.goal.parent: path = None
+        else: path = self.final_path()
         return path, self.goal.cost
 
     def add(self,new_node):
