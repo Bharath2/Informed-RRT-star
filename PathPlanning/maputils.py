@@ -44,6 +44,11 @@ class Map:
          return True
     return False
 
+  def inbounds(self,p):
+      '''Check if p lies inside map bounds'''
+      lower,upper = self.bounds
+      return (lower <= p).all() and (p <= upper).all()
+
   def plotobs(self,ax):
     '''plot all obstacles'''
     if self.dim == 2:

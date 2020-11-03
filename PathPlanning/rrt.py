@@ -35,7 +35,8 @@ class RRT:
               # directly to the goal and return the final path
               if self.dist(new_node,self.goal) <= self.max_extend_length:
                   if not self.map.collision(new_node.p,self.goal.p):
-                      return self.final_path(new_node)
+                      self.goal.parent = new_node
+                      return self.final_path()
         # cannot find path
         return None
 
@@ -69,16 +70,15 @@ class RRT:
             rnd = self.goal.p
         return Node(rnd)
 
-    def final_path(self, final_node):
+    def final_path(self):
         """Compute the final path from the goal node to the start node"""
-        path = [self.goal.p]
-        node = final_node
-        while (node.parent and (node.parent.p != self.goal.p).any()):
+        path = []
+        node = self.goal
+        while node.parent:
           path.append(node.p)
           node = node.parent
-        path.append(node.p)
-        path = np.array(path)
-        return path
+        path.append(self.start.p)
+        return np.array(path[::-1])
 
     def draw_graph(self,ax):
         '''plot the whole graph'''

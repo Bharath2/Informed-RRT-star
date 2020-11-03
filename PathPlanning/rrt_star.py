@@ -11,8 +11,6 @@ class RRTStar(RRT):
                  max_iter = 200 ):
         super().__init__(start, goal, Map, max_extend_length,
                          path_resolution, goal_sample_rate, max_iter)
-        self.min_cost = np.inf
-        self.best_final_node = None
         self.final_nodes = []
         self.Informedsampler = InformedSampler(goal, start)
 
@@ -33,16 +31,16 @@ class RRTStar(RRT):
               self.add(new_node)
 
         #Return path if it exists
-        if self.best_final_node:
-            path = self.final_path(self.best_final_node)
+        if self.goal.parent:
+            path = self.final_path()
         else: path = None
 
-        return path, self.min_cost
+        return path, self.goal.cost
 
     def add(self,new_node):
         near_nodes = self.near_nodes(new_node)
         # Connect the new node to the best parent in near_inds
-        new_node = self.choose_parent(new_node,near_nodes)
+        self.choose_parent(new_node,near_nodes)
         #add the new_node to tree
         self.tree.add(new_node)
         # Rewire the nodes in the proximity of new_node if it improves their costs
@@ -51,56 +49,37 @@ class RRTStar(RRT):
         if self.dist(new_node,self.goal) <= self.max_extend_length:
           # Connection between node and goal needs to be collision free
           if not self.map.collision(self.goal.p,new_node.p):
+            #add to final nodes if in goal region
             self.final_nodes.append(new_node)
-        #set_best_final_node and min_cost
-        self.set_best_final_node()
+        #set best final node and min_cost
+        self.choose_parent(self.goal,self.final_nodes)
 
-    def set_best_final_node(self):
-        # for nodes in close proximity to the goal
-        for node in self.final_nodes:
-          # The final path length
-          cost = self.new_cost(node,self.goal)
-          if cost < self.min_cost:
-              # Found better final node
-              self.min_cost = cost
-              self.best_final_node = node
-
-    def choose_parent(self, new_node,near_nodes):
-        """Set new_node.parent to the lowest resulting cost parent in near_inds and
-        new_node.cost to the corresponding minimal cost
+    def choose_parent(self, node, parents):
+        """Set node.parent to the lowest resulting cost parent in parents and
+           node.cost to the corresponding minimal cost
         """
         # Go through all near nodes and evaluate them as potential parent nodes
-        for node in near_nodes:
+        for parent in parents:
           #checking whether a connection would result in a collision
-          if not self.map.collision(new_node.p,node.p):
+          if not self.map.collision(node.p,parent.p):
             #evaluating the cost of the new_node if it had that near node as a parent
-            cost = self.new_cost(node, new_node)
+            cost = self.new_cost(parent, node)
             #picking the parent resulting in the lowest cost and updating the cost of the new_node to the minimum cost.
-            if cost < new_node.cost:
-              new_node.parent = node
-              new_node.cost = cost
-
-        return new_node
+            if cost < node.cost:
+              node.parent = parent
+              node.cost = cost
 
     def rewire(self, new_node, near_nodes):
         """Rewire near nodes to new_node if this will result in a lower cost"""
         #Go through all near nodes and check whether rewiring them to the new_node is useful
         for node in near_nodes:
-          #checking whether a connection would result in a collision
-          if not self.map.collision(new_node.p, node.p):
-            cost = self.new_cost(new_node, node)
-            #evaluating the cost of the node if it had that new_node as a parent
-            if cost < node.cost:
-              #update the cost and parent of the node.
-              node.parent = new_node
-              node.cost = cost
-
+          self.choose_parent(node,[new_node])
         self.propagate_cost_to_leaves(new_node)
 
     def near_nodes(self, node):
         """Find the nodes in close proximity to given node"""
         nnode = self.tree.len + 1
-        r = ceil(5*np.pi*np.log(nnode))
+        r = ceil(5.5*np.log(nnode))
         return self.tree.k_nearest(node,r)
 
     def new_cost(self, from_node, to_node):
@@ -117,12 +96,12 @@ class RRTStar(RRT):
     def sample(self):
         """Sample random node inside the informed region"""
         lower,upper = self.map.bounds
-        if self.best_final_node:
+        if self.goal.parent:
           rnd = upper + 1
           #sample until rnd is inside boundaries
-          while not (lower <= rnd and rnd <= upper).all():
+          while not self.map.inbounds(rnd):
               # Sample random point inside ellipsoid
-              rnd = self.Informedsampler.sample(self.min_cost)
+              rnd = self.Informedsampler.sample(self.goal.cost)
         else:
           # Sample random point inside boundaries
           rnd = lower + np.random.rand(self.dim)*(upper - lower)
