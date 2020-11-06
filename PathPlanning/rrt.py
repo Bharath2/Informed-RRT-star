@@ -90,6 +90,20 @@ class RRT:
     def draw_path(self,ax,path):
         '''draw the path if available'''
         if path is None:
-            print("path not found")
+            print("path not available")
         else:
             ax.plot(*np.array(path).T, '-r',zorder = 5)
+
+    def draw_scene(self,path = None,ax = None):
+        if ax is None:
+            fig = plt.figure()
+            if self.dim == 3:
+                ax = Axes3D.Axes3D(fig)
+            elif self.dim == 2:
+                ax = fig.add_axes()
+            else:
+                print('cannot plot for current dimensions')
+                return
+        self.draw_graph(ax)
+        self.draw_path(ax,path)
+        self.map.plotobs(ax)
