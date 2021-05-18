@@ -14,19 +14,19 @@ from matplotlib.pyplot import Rectangle
 class Map:
   def __init__(self,obstacle_list,bounds,path_resolution = 0.5,dim = 3):
     self.dim = dim
-    self.idx = self.get_tree(obstacle_list)
+    self.idx = self.get_tree(obstacle_list,dim)
     self.len = len(obstacle_list)
     self.path_res = path_resolution
     self.obstacles = obstacle_list
     self.bounds = bounds
 
   @staticmethod
-  def get_tree(obstacle_list):
+  def get_tree(obstacle_list,dim):
     '''initialise map with given obstacle_list'''
-    ls = []
-    for i, obj in enumerate(obstacle_list):
-      ls.append((i,(*obj,),None))
-    return index.Index(ls)
+    p = index.Property()
+    p.dimension = dim
+    ls = [(i,(*obj,),None) for i, obj in enumerate(obstacle_list)]
+    return index.Index(ls, properties=p)
 
   def add(self,obstacle):
     '''add new obstacle'''
@@ -40,8 +40,8 @@ class Map:
     n = int(dist/self.path_res)
     points = np.linspace(start,end,n)
     for p in points:
-     if self.idx.count((*p,)) != 0 :
-         return True
+      if self.idx.count((*p,)) != 0 :
+          return True
     return False
 
   def inbounds(self,p):
@@ -49,18 +49,19 @@ class Map:
       lower,upper = self.bounds
       return (lower <= p).all() and (p <= upper).all()
 
-  def plotobs(self,ax):
+  def plotobs(self,ax,scale = 1):
     '''plot all obstacles'''
+    obstacles = scale*np.array(self.obstacles)
     if self.dim == 2:
-        for box in self.obstacles:
+        for box in obstacles:
             l = box[2] - box[0]
             w = box[3] - box[1]
             box_plt = Rectangle((box[0], box[1]),l,w,color='k',zorder = 1)
             ax.add_patch(box_plt)
     elif self.dim == 3:
-        for box in self.obstacles:
+        for box in obstacles:
             X, Y, Z = cuboid_data(box)
-            ax.plot_surface(X, Y, Z, rstride=1, cstride=1,color='k',zorder = 1)
+            ax.plot_surface(X, Y, Z, rstride=1, cstride=1,color=(0.1, 0.15, 0.3, 0.2),zorder = 1)
     else: print('can not plot for given dimensions')
 
 

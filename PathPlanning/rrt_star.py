@@ -94,8 +94,8 @@ class RRTStar(RRT):
         """Sample random node inside the informed region"""
         lower,upper = self.map.bounds
         if self.goal.parent:
-          rnd = upper + 1
-          #sample until rnd is inside boundaries
+          rnd = np.inf
+          #sample until rnd is inside bounds of the map
           while not self.map.inbounds(rnd):
               # Sample random point inside ellipsoid
               rnd = self.Informedsampler.sample(self.goal.cost)

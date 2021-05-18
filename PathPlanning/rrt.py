@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import mpl_toolkits.mplot3d.axes3d as Axes3D
 from .rrtutils import *
 
 class RRT:
@@ -74,6 +75,7 @@ class RRT:
         """Compute the final path from the goal node to the start node"""
         path = []
         node = self.goal
+        if (node.p == node.parent.p).all(): node = node.parent
         while node.parent:
           path.append(node.p)
           node = node.parent
@@ -92,18 +94,20 @@ class RRT:
         if path is None:
             print("path not available")
         else:
-            ax.plot(*np.array(path).T, '-r',zorder = 5)
+            ax.plot(*np.array(path).T, '-', color = (0.9, 0.2, 0.5, 0.8), zorder = 5)
 
     def draw_scene(self,path = None,ax = None):
+        '''draw the whole scene'''
         if ax is None:
             fig = plt.figure()
             if self.dim == 3:
                 ax = Axes3D.Axes3D(fig)
             elif self.dim == 2:
-                ax = fig.add_axes()
+                ax = plt.axes()
             else:
                 print('cannot plot for current dimensions')
                 return
         self.draw_graph(ax)
         self.draw_path(ax,path)
         self.map.plotobs(ax)
+        plt.show()
