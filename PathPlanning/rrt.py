@@ -107,6 +107,7 @@ class RRT:
             else:
                 print('cannot plot for current dimensions')
                 return
+        ax.scatter(*path.T)
         if graph: self.draw_graph(ax)
         self.draw_path(ax,path)
         self.map.plotobs(ax)

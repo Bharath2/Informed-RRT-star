@@ -10,11 +10,8 @@ Informed RRT* to plan a collision free path from start to goal position in an N-
 ### Usage example
 ```python
 import numpy as np
-import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d.axes3d as Axes3D
-
 from PathPlanning import RRTStar, Map
-np.random.seed(8)
+np.random.seed(7)
 
 # 3D boxes   lx, ly, lz, hx, hy, hz
 obstacles = [[-5, 25, 0, 20, 35, 60],
@@ -30,22 +27,14 @@ bounds = np.array([0,100])
 mapobs = Map(obstacles, bounds, dim = 3)
 
 #plan a path from start to goal
-start = np.array([80,20,10])
-goal = np.array([30,80,80])
+start = np.array([90,60,60])
+goal = np.array([20,40,20])
 
 rrt = RRTStar(start = start, goal = goal,
               Map = mapobs, max_iter = 500,
               goal_sample_rate = 0.1)
 
 waypoints, min_cost = rrt.plan()
-
-#create a figure
-fig = plt.figure()
-ax = Axes3D.Axes3D(fig)
-ax.set_xlim((0,100))
-ax.set_ylim((0,100))
-ax.set_zlim((0,100))
-ax.scatter(*waypoints.T)
 
 #plot the waypoints and obstacles
 rrt.draw_scene(waypoints, ax)
