@@ -87,7 +87,7 @@ class RRT:
         for node in self.tree.all():
             if node.parent:
                 xy = np.c_[node.p,node.parent.p]
-                ax.plot(*xy, "-g",zorder = 5)
+                ax.plot(*xy, "-",color = (0.2, 0.9, 0.2, 0.9),zorder = 5)
 
     def draw_path(self,ax,path):
         '''draw the path if available'''
@@ -96,7 +96,7 @@ class RRT:
         else:
             ax.plot(*np.array(path).T, '-', color = (0.9, 0.2, 0.5, 0.8), zorder = 5)
 
-    def draw_scene(self,path = None,ax = None):
+    def draw_scene(self, path = None, ax = None, graph = False):
         '''draw the whole scene'''
         if ax is None:
             fig = plt.figure()
@@ -107,7 +107,7 @@ class RRT:
             else:
                 print('cannot plot for current dimensions')
                 return
-        self.draw_graph(ax)
+        if graph: self.draw_graph(ax)
         self.draw_path(ax,path)
         self.map.plotobs(ax)
         plt.show()
