@@ -3,9 +3,7 @@
 Informed RRT* to plan a collision free path from start to goal position in an N-dimensional Map.
 
 ### Dependencies
-- numpy
-- matplotlib
-- rtree-linux
+- numpy, matplotlib, rtree-linux
 
 ### Usage example
 ```python
